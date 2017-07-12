@@ -4,9 +4,25 @@
         <title>{{title}}</title>
     </head>
 <body>
+  <nav>
+    <a href="/blog">Main Blog Page</a> |
+    <a href="/newpost">Add a Blog Entry</a>
+  </nav>
 
-    {% block content %}
-    {% endblock %}
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      <ul class=flashes>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}
+
+
+  {% endblock %}
 
 </body>
 </html>

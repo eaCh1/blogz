@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1>Post Things!</h1>
+    {% if posts|length == 0 %}
+    <p>No posts yet!</p>
+    {% else %}
+        {% for post in posts %}
+
+          <h2><a href="">{{post.title}}</a></h2>
+          <p>{{post.body}}</p>
+          <input type="hidden" name="post-id" value="{{post.id}}" />
+
+        {% endfor %}
+    {% endif %}
+{% endblock %}

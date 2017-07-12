@@ -1,51 +1,67 @@
-from flask import Flask, request, redirect, render_template
+from flask import Flask, request, redirect, render_template, flash
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.secret_key = "some_secret"
 app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:teddybear@localhost:8889/build-a-blog'
 app.config['SQLALCHEMY_ECHO'] = True
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
-
 class Blog(db.Model):
-
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
-    body = db.Column(db.String(999))
+    body = db.Column(db.String(max))
+    def __init__(self, title, body):
+        self.title = title
+        self.body = body
 
-    def __init__(self, name):
-        self.name = name
-        self.completed = False
-
-
-@app.route('/', methods=['POST', 'GET'])
+@app.route('/blog')
 def index():
+    posts = Blog.query.all()
+    return render_template('blog.html',
+                            title="Post Things!",
+                            posts=posts)
+
+@app.route('/newpost', methods=['POST', 'GET'])
+def add_post():
 
     if request.method == 'POST':
-        task_name = request.form['task']
-        new_task = Task(task_name)
-        db.session.add(new_task)
-        db.session.commit()
 
-    tasks = Task.query.filter_by(completed=False).all()
-    completed_tasks = Task.query.filter_by(completed=True).all()
-    return render_template('todos.html',title="Get It Done!",
-        tasks=tasks, completed_tasks=completed_tasks)
+        post_title = request.form['post-title']
+        post_body = request.form['text-area']
 
+        if not is_title_empty() and not is_body_empty():
 
-@app.route('/delete-task', methods=['POST'])
-def delete_task():
+            post = Blog(post_title, post_body)
+            db.session.add(post)
+            db.session.commit()
+            return redirect('/blog')
+        else:
+            if is_title_empty():
+                flash("Please provide a title for your post")
+            if is_body_empty():
+                flash("Please provide some content for your post")
+            return render_template("newpost.html",
+                                    title="Try Again!",
+                                    post_title=post_title,
+                                    post_body=post_body)
 
-    task_id = int(request.form['task-id'])
-    task = Task.query.get(task_id)
-    task.completed = True
-    db.session.add(task)
-    db.session.commit()
+    return render_template("newpost.html",
+                            title="New Post!")
 
-    return redirect('/')
+def is_title_empty():
+    post_title = request.form['post-title']
+    if post_title != "":
+        return False
+    return True
 
+def is_body_empty():
+    post_body = request.form['text-area']
+    if post_body != "":
+        return False
+    return True
 
 if __name__ == '__main__':
     app.run()
-Contact GitHub API Training Shop Blog About
