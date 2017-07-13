@@ -17,12 +17,26 @@ class Blog(db.Model):
         self.title = title
         self.body = body
 
+
 @app.route('/blog')
 def index():
+
     posts = Blog.query.all()
-    return render_template('blog.html',
-                            title="Post Things!",
-                            posts=posts)
+
+    query_param = request.args.get('param_name')
+
+    posts = Blog.query.filter_by(id=query_param).all()
+
+
+    if query_param == 200:
+
+        return render_template("post.html", posts=posts)
+    else:
+        posts = Blog.query.all()
+        return render_template('blog.html',
+                                title="Post Things!",
+                                posts=posts)
+
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def add_post():
@@ -37,7 +51,8 @@ def add_post():
             post = Blog(post_title, post_body)
             db.session.add(post)
             db.session.commit()
-            return redirect('/blog')
+            post_id = post.id
+            return redirect('/blog?={}'.format(post_id))
         else:
             if is_title_empty():
                 flash("Please provide a title for your post")

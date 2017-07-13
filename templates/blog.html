@@ -6,9 +6,8 @@
     {% else %}
         {% for post in posts %}
 
-          <h2><a href="">{{post.title}}</a></h2>
+          <h2><a href="/blog?id={{post.id}}">{{post.title}}</a></h2>
           <p>{{post.body}}</p>
-          <input type="hidden" name="post-id" value="{{post.id}}" />
 
         {% endfor %}
     {% endif %}
