@@ -21,18 +21,19 @@ class Blog(db.Model):
 @app.route('/blog')
 def index():
 
-    posts = Blog.query.all()
-
-    query_param = request.args.get('param_name')
-
-    posts = Blog.query.filter_by(id=query_param).all()
-
-
-    if query_param == 200:
-
+    #must use this line in this project basically
+    #makes a mulidictionary with the parsed contents of the query String
+    #passing the key id in to th
+    #
+    if request.args.get('id'):
+        post_id = request.args.get('id')
+        #render individual blog post page, with list of posts
+        posts = Blog.query.filter_by(id=post_id)
         return render_template("post.html", posts=posts)
     else:
+        #grab all posts in the database
         posts = Blog.query.all()
+        #render main blog page
         return render_template('blog.html',
                                 title="Post Things!",
                                 posts=posts)
@@ -52,7 +53,7 @@ def add_post():
             db.session.add(post)
             db.session.commit()
             post_id = post.id
-            return redirect('/blog?={}'.format(post_id))
+            return redirect('/blog?id={}'.format(post_id))
         else:
             if is_title_empty():
                 flash("Please provide a title for your post")
