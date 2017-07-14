@@ -45,8 +45,8 @@ def add_post():
             post = Blog(post_title, post_body)
             db.session.add(post)
             db.session.commit()
-            post_id = post.id
-            return redirect('/blog?id={}'.format(post_id))
+            post_id = str(post.id)
+            return redirect('/blog?id=' + post_id)
         else:
             if is_title_empty():
                 flash("Please provide a title for your post")
