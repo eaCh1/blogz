@@ -41,16 +41,16 @@ def add_post():
     if request.method == 'POST':
         post_title = request.form['post-title']
         post_body = request.form['text-area']
-        if not is_title_empty() and not is_body_empty():
+        if not is_title_empty(post_title) and not is_body_empty(post_body):
             post = Blog(post_title, post_body)
             db.session.add(post)
             db.session.commit()
             post_id = str(post.id)
             return redirect('/blog?id=' + post_id)
         else:
-            if is_title_empty():
+            if is_title_empty(post_title):
                 flash("Please provide a title for your post")
-            if is_body_empty():
+            if is_body_empty(post_body):
                 flash("Please provide some content for your post")
             return render_template("newpost.html",
                                     title="Try Again!",
@@ -60,14 +60,12 @@ def add_post():
     return render_template("newpost.html",
                             title="New Post!")
 
-def is_title_empty():
-    post_title = request.form['post-title']
+def is_title_empty(post_title):
     if post_title != "":
         return False
     return True
 
-def is_body_empty():
-    post_body = request.form['text-area']
+def is_body_empty(post_body):
     if post_body != "":
         return False
     return True
