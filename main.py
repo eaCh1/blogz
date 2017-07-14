@@ -20,15 +20,11 @@ class Blog(db.Model):
 
 @app.route('/blog')
 def index():
-
-    #must use this line in this project basically
     #makes a mulidictionary with the parsed contents of the query String
-    #passing the key id in to th
-    #
-    if request.args.get('id'):
-        post_id = request.args.get('id')
+    query_param = request.args.get('id')
+    if query_param:
         #render individual blog post page, with list of posts
-        posts = Blog.query.filter_by(id=post_id)
+        posts = Blog.query.filter_by(id=query_param)
         return render_template("post.html", posts=posts)
     else:
         #grab all posts in the database
@@ -43,12 +39,9 @@ def index():
 def add_post():
 
     if request.method == 'POST':
-
         post_title = request.form['post-title']
         post_body = request.form['text-area']
-
         if not is_title_empty() and not is_body_empty():
-
             post = Blog(post_title, post_body)
             db.session.add(post)
             db.session.commit()
