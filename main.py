@@ -35,28 +35,11 @@ def require_login():
     if request.endpoint not in allowed_routes and 'email' not in session:
         return redirect('/login')
 
-@app.route('/blog')
-def main_blog():
-    #makes a mulidictionary with the parsed contents of the query String
-    post_param = request.args.get('post_id')
-    #owner_param = request.args.get('owner_id')
-    if post_param:
-        #render individual blog post page, with list of posts
-        posts = Blog.query.filter_by(id=post_param)
-        return render_template("post.html",
-                                posts=posts)
-    else:
-        #grab all posts in the database
-        posts = Blog.query.all()
-        #render main blog page
-        return render_template('blog.html',
-                                title="Post Things!",
-                                posts=posts)
-# @app.before_request
-# def require_login():
-#     allowed_routes = ['login', 'register']
-#     if request.endpoint not in allowed_routes and 'email' not in session:
-#         return redirect('/login')
+@app.route('/')
+def index():
+    users = User.query.all()
+    return render_template("index.html", users=users)
+
 @app.route('/login', methods=['POST', 'GET'])
 def login():
     if request.method == 'POST':
@@ -76,6 +59,24 @@ def login():
                 return render_template('login.html', email=email)
 
     return render_template('login.html')
+
+@app.route('/blog')
+def main_blog():
+    #makes a mulidictionary with the parsed contents of the query String
+    post_param = request.args.get('post_id')
+    #owner_param = request.args.get('owner_id')
+    if post_param:
+        #render individual blog post page, with list of posts
+        posts = Blog.query.filter_by(id=post_param)
+        return render_template("post.html",
+                                posts=posts)
+    else:
+        #grab all posts in the database
+        posts = Blog.query.all()
+        #render main blog page
+        return render_template('blog.html',
+                                title="Post Things!",
+                                posts=posts)
 
 @app.route('/register', methods=['POST', 'GET'])
 def register():
@@ -101,7 +102,7 @@ def register():
     return render_template('register.html')
 
 @app.route('/newpost', methods=['POST', 'GET'])
-def add_post():
+def new_post():
     if request.method == 'POST':
         post_title = request.form['post-title']
         post_body = request.form['text-area']
