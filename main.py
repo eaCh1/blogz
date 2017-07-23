@@ -10,20 +10,22 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 
 class Blog(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(999))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, body):
+    def __init__(self, title, body, owner):
         self.title = title
         self.body = body
-        #sself.owner = owner
+        self.owner = owner
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email= db.Column(db.String(30))
     password = db.Column(db.String(30))
-    blogs = db.relationship('Blog', backref='user')
+    posts = db.relationship('Blog', backref='owner')
 
     def __init__(self, email, password):
         self.email = email
@@ -63,13 +65,19 @@ def login():
 @app.route('/blog')
 def main_blog():
     #makes a mulidictionary with the parsed contents of the query String
-    post_param = request.args.get('post_id')
-    #owner_param = request.args.get('owner_id')
-    if post_param:
-        #render individual blog post page, with list of posts
-        posts = Blog.query.filter_by(id=post_param)
-        return render_template("post.html",
-                                posts=posts)
+    post_param = request.args.get('id')
+    owner_param = request.args.get('user')
+
+    if post_param or owner_param:
+        if post_param:
+            #render individual blog post page, with list of posts
+            posts = Blog.query.filter_by(id=post_param).all()
+            return render_template('post.html',
+                                    posts=posts)
+        if owner_param:
+            posts = Blog.query.filter_by(owner_id=owner_param).all()
+            return render_template('user.html',
+                                    posts=posts)
     else:
         #grab all posts in the database
         posts = Blog.query.all()
@@ -103,6 +111,9 @@ def register():
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def new_post():
+    # grab the owner of the post, whomever is currently logged in
+    owner = User.query.filter_by(email=session['email']).first()
+    # if a POST request comes through the page
     if request.method == 'POST':
         post_title = request.form['post-title']
         post_body = request.form['text-area']
@@ -117,13 +128,18 @@ def new_post():
             return True
 
         if not is_title_empty(post_title) and not is_body_empty(post_body):
-            post = Blog(post_title, post_body)
+            #user Blog constructor to create a new post
+            post = Blog(post_title, post_body, owner)
+            #add the post to the db session
             db.session.add(post)
+            #commit the session, send to db
             db.session.commit()
 
+            #extract post id
             post_id = str(post.id)
-            owner_id = str(post.owner_id)
-            return redirect('/blog?post_id=' + post_id + '&owner_id=' + owner_id)
+            #extract owner id
+            user = str(post.owner_id)
+            return redirect('/blog?id=' + post_id + '&user=' + user)
         else:
             if is_title_empty(post_title):
                 flash("Please provide a title for your post")
@@ -133,7 +149,7 @@ def new_post():
                                     title="Try Again!",
                                     post_title=post_title,
                                     post_body=post_body)
-
+    # return the blank template if there is NO post request
     return render_template("newpost.html",
                             title="New Post!")
 
@@ -188,7 +204,6 @@ def validate_register(email, password, verify):
         return True
     else:
         return render_template("register.html")
-
 
 if __name__ == '__main__':
     app.run()
