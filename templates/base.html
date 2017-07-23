@@ -6,7 +6,11 @@
 <body>
   <nav>
     <a href="/blog">Main Blog Page</a> |
-    <a href="/newpost">Add a Blog Entry</a>
+    <a href="/newpost">Add a Blog Entry</a> |
+    <a href="/login">Login</a> |
+    <a href="/register">Register</a> |
+    <a href="/logout">Logout</a> |
+    <a href="/">Home</a>
   </nav>
 
     {% with messages = get_flashed_messages() %}
@@ -17,7 +21,7 @@
       {% endfor %}
     </ul>
     {% endif %}
-  {% endwith %}
+    {% endwith %}
 
   {% block content %}
 

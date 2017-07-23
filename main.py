@@ -28,9 +28,13 @@ class User(db.Model):
     def __init__(self, email, password):
         self.email = email
         self.password = password
-@app.route('/')
-def index():
-    return redirect ('/blog')
+
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'main_blog', 'register', 'index', 'signup']
+    if request.endpoint not in allowed_routes and 'email' not in session:
+        return redirect('/login')
+
 @app.route('/blog')
 def main_blog():
     #makes a mulidictionary with the parsed contents of the query String
@@ -102,6 +106,15 @@ def add_post():
         post_title = request.form['post-title']
         post_body = request.form['text-area']
 
+        def is_title_empty(post_title):
+            if post_title != "":
+                return False
+            return True
+        def is_body_empty(post_body):
+            if post_body != "":
+                return False
+            return True
+
         if not is_title_empty(post_title) and not is_body_empty(post_body):
             post = Blog(post_title, post_body)
             db.session.add(post)
@@ -122,14 +135,12 @@ def add_post():
 
     return render_template("newpost.html",
                             title="New Post!")
-def is_title_empty(post_title):
-    if post_title != "":
-        return False
-    return True
-def is_body_empty(post_body):
-    if post_body != "":
-        return False
-    return True
+
+@app.route('/logout', methods=['GET'])
+def logout():
+    del session['email']
+    return redirect('/blog')
+
 def validate_register(email, password, verify):
 
     def is_valid_email(email):
